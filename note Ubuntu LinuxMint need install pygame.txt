@@ -1,0 +1,5 @@
+sudo apt-get update
+sudo add-apt-repository universe
+sudo apt-get install python3-tk
+sudo apt-get install python3-pip
+sudo -H pip install pygame
