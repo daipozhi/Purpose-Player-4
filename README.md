@@ -5,11 +5,11 @@ and play mp3 files,tested on Ubuntu 20/Linux Mint 20(Python 3.8) and Windows 10(
 
     on Ubuntu 20/Linux Mint 20 need input below command to install TK and Pygame
 
-sudo apt-get update
-sudo add-apt-repository universe
-sudo apt-get install python3-tk
-sudo apt-get install python3-pip
-sudo -H pip install pygame
+    sudo apt-get update
+    sudo add-apt-repository universe
+    sudo apt-get install python3-tk
+    sudo apt-get install python3-pip
+    sudo -H pip install pygame
 
     on Windows 10 ,need download Python3 and install it, after that,
 need download Pygame and install it by pip.
@@ -26,11 +26,11 @@ need download Pygame and install it by pip.
 
     在Ubuntu 20/Linux Mint 20需要输入以下命令以便安装TK和Pygame:
 
-sudo apt-get update
-sudo add-apt-repository universe
-sudo apt-get install python3-tk
-sudo apt-get install python3-pip
-sudo -H pip install pygame
+    sudo apt-get update
+    sudo add-apt-repository universe
+    sudo apt-get install python3-tk
+    sudo apt-get install python3-pip
+    sudo -H pip install pygame
 
     在Windows 10需要下载Python3并安装，然后下载Pygame并用pip安装。
 
