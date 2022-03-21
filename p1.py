@@ -102,13 +102,13 @@ rf9 =tr.insert('', END, text='<>J:/', open=True, values=info )
 rf10=tr.insert('', END, text='<>K:/', open=True, values=info )
 rf11=tr.insert('', END, text='<>L:/', open=True, values=info )
 
-global mu_play,mu_load,mu_pause,mu_thr,mu_abt,item_id0
+global mu_play,mu_load,mu_pause,mp_thr,mp_abt,item_id0
 
 mu_play=0
 mu_load=0
 mu_pause=0
-mu_thr=0
-mu_abt=0
+mp_thr=0
+mp_abt=0
 item_id0=''
 
 def btClick():
@@ -163,7 +163,7 @@ def file_size_format(size_n1):
   
 def trClick(event):
 
-    global mu_play,mu_load,mu_pause,mu_thr,mu_abt,item_id0,mainw,tr,tr_lock
+    global mu_play,mu_load,mu_pause,mp_thr,mp_abt,item_id0,mainw,tr,tr_lock
 
     item_dir  =''
     item_id0  =tr.selection()
@@ -203,7 +203,7 @@ def trClick(event):
 
     driver=0     
     if len(item_dir)==3:
-        if item_dir[0]>='C' and item_dir[0]<='Z' and item_dir[1]==':' and len(item_dir)==3:
+        if item_dir[0]>='C' and item_dir[0]<='Z' and item_dir[1]==':' :
             driver=1
 
     if os.path.isdir(item_dir) or driver==1 :
@@ -288,33 +288,32 @@ def trClick(event):
         if tr_lock==1:
             return
 
-        if mu_thr==1:
-            mu_abt=1
+        if mp_thr==1:
+            mp_abt=1
             while 1:
+                print('sleep2 abt',mp_abt,'thr',mp_thr)
 
-                print('sleep2',mu_abt,mu_thr)
-
-                if mu_thr==1:
+                if mp_thr==1:
                     time.sleep(0.1)
                 else:
                     break
 
-        mu_abt=0
+        mp_abt=0
         time.sleep(0.1)
 
         tr_lock=1
-        mu_thr=1
+        mp_thr=1
         
         try:
           thr=Thread(target=mpNext)
           thr.start()
         except:
           tr_lock=0
-          mu_thr=0
+          mp_thr=0
         
 def mpNext():
 
-    global mu_load,mu_play,mu_pause,mu_thr,mu_abt,item_id0,mainw,tr,tr_lock,bt
+    global mu_load,mu_play,mu_pause,mp_thr,mp_abt,item_id0,mainw,tr,tr_lock,bt
 
     item_id1  =tr.parent(item_id0)
     chld=tr.get_children(item_id1)
@@ -322,9 +321,9 @@ def mpNext():
 
     for o in chld:
 
-        print('step',step,o,item_id0)
+        print('mp step',step,o,item_id0)
 
-        if mu_abt==1:
+        if mp_abt==1:
             break
 
         if step==0:
@@ -340,12 +339,12 @@ def mpNext():
             try:
                 item_text =tr.item(o3,'text')
             except:
-                mu_thr=0
+                mp_thr=0
                 tr_lock=0
                 return
             
             if len(item_text)==0:
-                mu_thr=0
+                mp_thr=0
                 tr_lock=0
                 return
 
@@ -402,11 +401,10 @@ def mpNext():
                 tr_lock=0
 
                 while pygame.mixer.music.get_busy() or mu_pause==1 :
-                    if mu_abt==1:
-                        pygame.mixer.music.stop()
+                    if mp_abt==1:
                         break
                     time.sleep(0.1)
-                    print('sleep1',mu_abt,mu_thr)
+                    print('sleep1 abt',mp_abt,'thr',mp_thr)
 
                 print('sleep1 out')
 
@@ -416,26 +414,26 @@ def mpNext():
                 
                 pygame.mixer.music.stop()
 
-                if mu_abt==1:
+                if mp_abt==1:
                     print('break2')
                     break
             else:
                 step=2
                 print('break3')
                 break
-    mu_thr=0
+    mp_thr=0
     tr_lock=0
     print('return4')
 
 
 def winClose():
 
-    global mu_thr,mu_abt,mainw
+    global mp_thr,mp_abt,mainw
 
-    if mu_thr==1:
-        mu_abt=1
+    if mp_thr==1:
+        mp_abt=1
         while 1:
-            if mu_thr==1:
+            if mp_thr==1:
                 time.sleep(0.1)
             else:
                 break
