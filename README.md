@@ -19,7 +19,7 @@
     or on Windows 10,open command line window,input
         python p1.py
 
-    this is version 1.21
+    this is version 1.28
     
     小戴媒体播放器4
 
@@ -41,6 +41,6 @@
     或者在Windows 10,打开命令行窗口输入：
         python p1.py
 
-    版本1.21
+    版本1.28
 
 

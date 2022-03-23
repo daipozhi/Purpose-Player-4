@@ -14,17 +14,16 @@ global mainw
 mainw = Tk()
 
 width = 1200
-height = 700
+height = 715
 
 mainw.title('Purpose Player 4')
 mainw.geometry('{}x{}+{}+{}'.format(width, height, 0, 0))
 
 columns = ['Type', 'Size', 'Date' ]
 
-scr1=Scrollbar(mainw)
-scr1.pack(fill=Y,side=RIGHT)
-
 global tr
+
+scr1=Scrollbar(mainw,orient='vertical')
 
 tr = ttk.Treeview(
            mainw,
@@ -32,6 +31,7 @@ tr = ttk.Treeview(
            columns=columns,
            show='tree headings',
            selectmode='browse',
+           yscrollcommand=scr1.set,
                  )
 
 s = ttk.Style()
@@ -47,34 +47,14 @@ tr.column('Type', width= 60)
 tr.column('Size', width= 70)
 tr.column('Date', width=160)
 
-tr.pack()
+scr1['command']=tr.yview
 
-tr.config(yscrollcommand = scr1.set)
+tr.grid(row=0,rowspan=40,column=0,columnspan=80)
+
+scr1.grid(row=0,rowspan=40,column=81,sticky='ns')
+
+#tr.config(yscrollcommand = scr1.set)
 #scr1.config(command = tree1.yview)
-
-global tr_lock
-
-tr_lock=0
-
-
-
-#progbar1 = ttk.Progressbar(mainw, orient=HORIZONTAL, length=500, mode='indeterminate')
-#progbar1.pack()
-#progbar1['maximum'] = 100
-#progbar1['value'] = 20
-
-
-
-
-
-#progbar2 = ttk.Progressbar(mainw, orient=HORIZONTAL, length=100, mode='indeterminate')
-#progbar2.pack()
-#progbar2['maximum'] = 100
-#progbar2['value'] = 80
-
-
-
-
 
 global img1
 global img2
@@ -102,14 +82,29 @@ rf9 =tr.insert('', END, text='<>J:/', open=True, values=info )
 rf10=tr.insert('', END, text='<>K:/', open=True, values=info )
 rf11=tr.insert('', END, text='<>L:/', open=True, values=info )
 
-global mu_play,mu_load,mu_pause,mp_thr,mp_abt,item_id0
+global mu_play,mu_load,mu_pause,item_id0
 
 mu_play=0
 mu_load=0
 mu_pause=0
-mp_thr=0
-mp_abt=0
 item_id0=''
+
+probar1 = ttk.Progressbar(mainw, orient=HORIZONTAL, length=980, mode='indeterminate')
+probar1['maximum'] = 100
+probar1['value'] = 0
+probar1.grid(row=41,column=0,columnspan=65)
+
+probar2 = ttk.Progressbar(mainw, orient=HORIZONTAL, length=200, mode='indeterminate')
+probar2['maximum'] = 100
+probar2['value'] = 0
+probar2.grid(row=41,column=66,columnspan=14)
+
+lb = Label(mainw, width=18, text="00:00:00/00:00:00")
+lb.grid(row=42,column=0)
+
+lb2 = Label(mainw, width=8, text="Volume")
+lb2.grid(row=42,column=79)
+
 
 def btClick():
 
@@ -130,7 +125,7 @@ def btClick():
 global bt
 
 bt=Button(mainw,height=1,width=20,text='Play',command=btClick)
-bt.pack()
+bt.grid(row=42,column=35)
 
 def file_size_format(size_n1):
 
@@ -163,7 +158,7 @@ def file_size_format(size_n1):
   
 def trClick(event):
 
-    global mu_play,mu_load,mu_pause,mp_thr,mp_abt,item_id0,mainw,tr,tr_lock
+    global mu_play,mu_load,mu_pause,item_id0,mainw,tr
 
     item_dir  =''
     item_id0  =tr.selection()
@@ -285,68 +280,64 @@ def trClick(event):
           for o in chld:
               tr.delete(o)
     else:
-        if tr_lock==1:
-            return
-
-        if mp_thr==1:
-            mp_abt=1
-            while 1:
-                print('sleep2 abt',mp_abt,'thr',mp_thr)
-
-                if mp_thr==1:
-                    time.sleep(0.1)
-                else:
-                    break
-
-        mp_abt=0
-        time.sleep(0.1)
-
-        tr_lock=1
-        mp_thr=1
-        
-        try:
-          thr=Thread(target=mpNext)
-          thr.start()
-        except:
-          tr_lock=0
-          mp_thr=0
-        
+        event = pygame.event.Event(pygame.USEREVENT+2)
+        pygame.event.post(event)
+            
 def mpNext():
 
-    global mu_load,mu_play,mu_pause,mp_thr,mp_abt,item_id0,mainw,tr,tr_lock,bt
+  global mu_load,mu_play,mu_pause,item_id0,mainw,tr,bt
 
-    item_id1  =tr.parent(item_id0)
-    chld=tr.get_children(item_id1)
-    step=0
+  pygame.init()
+  chld=[]
+  id0=[]
+  stop=0
+  
+  pygame.time.set_timer(pygame.USEREVENT+3,500)
+  
+  while 1:
+    event = pygame.event.wait()
+    
+    print('event.type',event.type,'pg.User1',pygame.USEREVENT+1)
+    
+    if event.type == pygame.QUIT:
+        return
 
-    for o in chld:
+    if event.type == pygame.USEREVENT+2 : #start to play
 
-        print('mp step',step,o,item_id0)
+      id0=item_id0
 
-        if mp_abt==1:
-            break
+      if pygame.mixer.music.get_busy() or mu_pause==1 :
+        pygame.mixer.music.stop()
+
+        bt['text']='Play'     #dead lock
+        mu_load=0
+        mu_play=0
+        stop=1
+      
+      item_id1  =tr.parent(id0)
+
+      chld=tr.get_children(item_id1)
+      step=0
+      nextsong=''
+
+      for o in chld:
 
         if step==0:
-            for o2 in item_id0:
+            for o2 in id0:
                 if o==o2:
                     step=1
 
         if step==1:
-
             item_dir  =''
             o3        =o
 
             try:
                 item_text =tr.item(o3,'text')
             except:
-                mp_thr=0
-                tr_lock=0
-                return
+                break
             
             if len(item_text)==0:
-                mp_thr=0
-                tr_lock=0
-                return
+                break
 
             if item_text[0]==':':
                 item_text2=item_text.split('|',1)
@@ -375,7 +366,8 @@ def mpNext():
                   item_dir=item_text4[1]+'/'+item_dir
                   o3=item_id2
 
-            #messagebox.showinfo('selected file',item_dir,icon=None, type=None )
+            print('item_dir',item_dir)
+            
             item_dir2=item_dir.split('.',-1)
             item_dir2[-1]=item_dir2[-1].lower()
             if item_dir2[-1]=='mp3':
@@ -385,10 +377,8 @@ def mpNext():
                     pygame.mixer.music.load(item_dir)
                     pygame.mixer.music.play()
                 except:
+                    print('break1')
                     break;
-
-                #time.sleep(10)
-                #pygame.mixer.music.stop()
 
                 bt['text']='Pause'
                 mu_load=1
@@ -398,54 +388,169 @@ def mpNext():
                 tr.selection_set(ol)
 
                 mainw.title(item_dir)
-                tr_lock=0
-
-                while pygame.mixer.music.get_busy() or mu_pause==1 :
-                    if mp_abt==1:
-                        break
-                    time.sleep(0.1)
-                    print('sleep1 abt',mp_abt,'thr',mp_thr)
-
-                print('sleep1 out')
-
-                #bt['text']='Play'     #dead lock
-                mu_load=0
-                mu_play=0
                 
-                pygame.mixer.music.stop()
+                pygame.mixer.music.set_endevent(pygame.USEREVENT + 1)
 
-                if mp_abt==1:
-                    print('break2')
-                    break
-            else:
+                vl=pygame.mixer.music.get_volume()
+                vl2=vl*100
+                probar2['value'] = vl2
+                mainw.update()
+                
                 step=2
+                print('continue2')
+                continue
+            else:
                 print('break3')
                 break
-    mp_thr=0
-    tr_lock=0
-    print('return4')
+                
+        if step==2:
+            nextsong=o
+            print('break4')
+            break
 
+    if event.type == pygame.USEREVENT+1: #auto next
+    
+      if stop==1:
+        stop=0
+        continue
 
-def winClose():
+      if pygame.mixer.music.get_busy() or mu_pause==1 :
+        pygame.mixer.music.stop()
 
-    global mp_thr,mp_abt,mainw
+        bt['text']='Play'     #dead lock
+        mu_load=0
+        mu_play=0
+        stop=1
+                
+      step=0
+      id0=[nextsong,]
+      nextsong=''
 
-    if mp_thr==1:
-        mp_abt=1
-        while 1:
-            if mp_thr==1:
-                time.sleep(0.1)
-            else:
+      for o in chld:
+
+        if step==0:
+            for o2 in id0:
+                if o==o2:
+                    step=1
+
+        if step==1:
+            item_dir  =''
+            o3        =o
+
+            try:
+                item_text =tr.item(o3,'text')
+            except:
+                break
+            
+            if len(item_text)==0:
                 break
 
-    time.sleep(0.1)
+            if item_text[0]==':':
+                item_text2=item_text.split('|',1)
+            else:
+                item_text2=item_text.split('>',1)
+            item_dir=item_text2[1]
 
+            while 1:
+              item_id2  =tr.parent(o3)
+              
+              if len(item_id2)==0:
+                  item_text5=item_dir
+                  break
+              item_text3=tr.item(item_id2,'text')
+              
+              item_text4=item_text3.split('>',1)
+              item_text5=item_text4[1].upper()
+
+              if item_text4[1]=='/':
+                  item_dir=item_text4[1]+item_dir
+                  break
+              elif item_text5[0]>='C' and item_text5[0]<='Z' and item_text5[1]==':':
+                  item_dir=item_text5+item_dir
+                  break
+              else:
+                  item_dir=item_text4[1]+'/'+item_dir
+                  o3=item_id2
+
+
+            item_dir2=item_dir.split('.',-1)
+            item_dir2[-1]=item_dir2[-1].lower()
+            if item_dir2[-1]=='mp3':
+
+                try:
+                    pygame.mixer.init()
+                    pygame.mixer.music.load(item_dir)
+                    pygame.mixer.music.play()
+                except:
+                    print('break1')
+                    break;
+
+                bt['text']='Pause'
+                mu_load=1
+                mu_play=1
+
+                ol=[o,]
+                tr.selection_set(ol)
+
+                mainw.title(item_dir)
+                
+                pygame.mixer.music.set_endevent(pygame.USEREVENT + 1)
+
+                vl=pygame.mixer.music.get_volume()
+                vl2=vl*100
+                probar2['value'] = vl2
+                mainw.update()
+                
+                step=2
+                print('continue2')
+                continue
+            else:
+                print('break3')
+                break
+                
+        if step==2:
+            nextsong=o
+            print('break4')
+            break
+            
+    if event.type == pygame.USEREVENT+3 : #display position
+    
+      if pygame.mixer.music.get_busy() :
+        ps=pygame.mixer.music.get_pos()
+        ps1=int(ps/1000)
+        ps2=int(ps1/3600)
+        ps3=int((ps1-ps2*3600)/60)
+        ps4=int(ps1-ps2*3600-ps3*60)
+        
+        s1=str(int(ps2))
+        if len(s1)==1:
+          s1='0'+s1
+        s2=str(int(ps3))
+        if len(s2)==1:
+          s2='0'+s2
+        s3=str(int(ps4))
+        if len(s3)==1:
+          s3='0'+s3
+          
+        ps5=s1+':'+s2+':'+s3+'/00:00:00'
+        print('pos=',ps5)
+        lb.config(text=ps5)
+
+def mainwClose():
+
+    global mainw
+
+    event = pygame.event.Event(pygame.QUIT)
+    pygame.event.post(event)
+    
     mainw.destroy()
 
-mainw.protocol("WM_DELETE_WINDOW", winClose)
+mainw.protocol("WM_DELETE_WINDOW", mainwClose)
 
 tr.bind('<ButtonRelease-1>', trClick)
 
+thr=Thread(target=mpNext)
+thr.start()
 
 mainw.mainloop()
 
