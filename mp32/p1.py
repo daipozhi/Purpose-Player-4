@@ -14,7 +14,7 @@ global mainw
 mainw = Tk()
 
 width = 1200
-height = 715
+height = 720
 
 mainw.title('Purpose Player 4')
 mainw.geometry('{}x{}+{}+{}'.format(width, height, 0, 0))
@@ -27,7 +27,7 @@ scr1=Scrollbar(mainw,orient='vertical')
 
 tr = ttk.Treeview(
            mainw,
-           height=40,
+           height=38,
            columns=columns,
            show='tree headings',
            selectmode='browse',
@@ -35,7 +35,7 @@ tr = ttk.Treeview(
                  )
 
 s = ttk.Style()
-s.configure('Treeview', rowheight=16)
+s.configure('Treeview', rowheight=17)
                 
 tr.heading('#0'  , text='Name')
 tr.heading('Type', text='Type')  
@@ -135,10 +135,10 @@ def file_size_format(size_n1):
   if size_n1<0 or size_n1>=100000:
       size_str2="****"
   elif size_n1>=10000 and size_n1<100000:
-      i=size_n1/100;
+      i=int(size_n1/100);
       size_str2=str(i)
   elif size_n1>=1000 and size_n1<10000:
-      i=size_n1/10;
+      i=int(size_n1/10);
       f1=i/10;
       size_str2=str(f1)
   elif size_n1<1000:
@@ -147,8 +147,8 @@ def file_size_format(size_n1):
 
   #print('1-',size_str2)
 
-  if len(size_str2)>5:
-    size_str2=size_str2[0:4]
+  if len(size_str2)>4:
+    size_str2=size_str2[0:3]
   #elif len(size_str2)<4:
   #  size_str2="    "
 
@@ -305,6 +305,7 @@ def mpNext():
     if event.type == pygame.USEREVENT+2 : #start to play
 
       id0=item_id0
+      stop=0
 
       if pygame.mixer.music.get_busy() or mu_pause==1 :
         pygame.mixer.music.stop()
