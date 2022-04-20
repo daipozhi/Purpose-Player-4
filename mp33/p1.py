@@ -70,17 +70,17 @@ info = [ '', '', '',]
 
 global rf1,rf2,rf3,rf4,rf5,rf6,rf7,rf8,rf9,rf10,rf11
 
-rf1 =tr.insert('', END, text='<>/'  , open=True, values=info )
-rf2 =tr.insert('', END, text='<>C:/', open=True, values=info )
-rf3 =tr.insert('', END, text='<>D:/', open=True, values=info )
-rf4 =tr.insert('', END, text='<>E:/', open=True, values=info )
-rf5 =tr.insert('', END, text='<>F:/', open=True, values=info )
-rf6 =tr.insert('', END, text='<>G:/', open=True, values=info )
-rf7 =tr.insert('', END, text='<>H:/', open=True, values=info )
-rf8 =tr.insert('', END, text='<>I:/', open=True, values=info )
-rf9 =tr.insert('', END, text='<>J:/', open=True, values=info )
-rf10=tr.insert('', END, text='<>K:/', open=True, values=info )
-rf11=tr.insert('', END, text='<>L:/', open=True, values=info )
+rf1 =tr.insert('', END, text='</>'  , open=True, values=info )
+rf2 =tr.insert('', END, text='<C:/>', open=True, values=info )
+rf3 =tr.insert('', END, text='<D:/>', open=True, values=info )
+rf4 =tr.insert('', END, text='<E:/>', open=True, values=info )
+rf5 =tr.insert('', END, text='<F:/>', open=True, values=info )
+rf6 =tr.insert('', END, text='<G:/>', open=True, values=info )
+rf7 =tr.insert('', END, text='<H:/>', open=True, values=info )
+rf8 =tr.insert('', END, text='<I:/>', open=True, values=info )
+rf9 =tr.insert('', END, text='<J:/>', open=True, values=info )
+rf10=tr.insert('', END, text='<K:/>', open=True, values=info )
+rf11=tr.insert('', END, text='<L:/>', open=True, values=info )
 
 global mu_play,mu_load,mu_pause,item_id0
 
@@ -167,33 +167,45 @@ def trClick(event):
     
     if len(item_text)==0:
         return
-    if item_text[0]==':':
-      item_text2=item_text.split('|',1)
-    elif item_text[0]=='<':
-      item_text2=item_text.split('>',1)
-    else:
+        
+    if item_text[0]=='<':
+      item_text2=item_text.split('<',1)
+      item_text3=item_text2[1]
+      item_text4=item_text3.split('>',1)
+      item_text5=item_text4[0]
+    elif item_text[0]=='|':
       return
-    item_dir=item_text2[1]
+    else:
+      item_text5=item_text
+      
+    item_dir=item_text5
     
     while 1:
       item_id2  =tr.parent(item_id1)
       
       if len(item_id2)==0:
-        item_text5=item_dir
+        #item_text5=item_dir
         break
-      item_text3=tr.item(item_id2,'text')
+        
+      item_text=tr.item(item_id2,'text')
       
+      item_text2=item_text.split('<',1)
+      item_text3=item_text2[1]
       item_text4=item_text3.split('>',1)
-      item_text5=item_text4[1].upper()
+      item_text5=item_text4[0].upper()
 
-      if item_text4[1]=='/':
-        item_dir=item_text4[1]+item_dir
+      if item_text4[0]=='/':
+        item_dir=item_text4[0]+item_dir
         break
-      elif item_text5[0]>='C' and item_text5[0]<='Z' and item_text5[1]==':':
-        item_dir=item_text5+item_dir
-        break
+      elif len(item_text5)>=2:
+        if item_text5[0]>='C' and item_text5[0]<='Z' and item_text5[1]==':':
+          item_dir=item_text5+item_dir
+          break
+        else:
+          item_dir=item_text4[0]+'/'+item_dir
+          item_id1=item_id2
       else:
-        item_dir=item_text4[1]+'/'+item_dir
+        item_dir=item_text4[0]+'/'+item_dir
         item_id1=item_id2
 
     driver=0     
@@ -207,7 +219,7 @@ def trClick(event):
         item_empt=1
         chld=tr.get_children(item_id0)
         
-        if len(chld)==0:
+        if len(chld)==0: 
           dirs=[]
           try:
               dirs = os.listdir(item_dir)
@@ -222,7 +234,7 @@ def trClick(event):
               info2= ['', '', '',]
               if os.path.isdir(item_dir+'/'+files):
                   item_empt=0
-                  tr.insert(item_id0, END, text='<>'+files, open=True)
+                  tr.insert(item_id0, END, text='<'+files+'>', open=True)
             
           dirs=[]
           try:  
@@ -271,10 +283,10 @@ def trClick(event):
                 
                 info2= [ext[-1], size_str2+size_str1, file_time,]
                 
-                tr.insert(item_id0, END, text=':|'+files, open=True, values=info2 )
+                tr.insert(item_id0, END, text=files, open=True, values=info2 )
 
           if item_empt==1:
-              tr.insert(item_id0, END, text='??'+'Empty Fold', open=True)
+              tr.insert(item_id0, END, text='|'+'Empty Fold'+'|', open=True)
 
         else:
           for o in chld:
@@ -329,53 +341,66 @@ def mpNext():
                     step=1
 
         if step==1:
-            item_dir  =''
-            o3        =o
+            mydir  =''
+            o3     =o
 
             try:
                 item_text =tr.item(o3,'text')
             except:
                 break
             
-            if len(item_text)==0:
+            if len(item_text)==0: 
                 break
 
-            if item_text[0]==':':
-                item_text2=item_text.split('|',1)
+            if item_text[0]=='<':
+              item_text2=item_text.split('<',1)
+              item_text3=item_text2[1]
+              item_text4=item_text3.split('>',1)
+              mydir=item_text4[0]
+              break
+            elif item_text[0]=='|':
+              mydir=item_text
+              break
             else:
-                item_text2=item_text.split('>',1)
-            item_dir=item_text2[1]
+              mydir=item_text
 
             while 1:
               item_id2  =tr.parent(o3)
               
               if len(item_id2)==0:
-                  item_text5=item_dir
+                  item_text5=mydir
                   break
-              item_text3=tr.item(item_id2,'text')
+                  
+              item_text=tr.item(item_id2,'text')
               
+              item_text2=item_text.split('<',1)
+              item_text3=item_text2[1]
               item_text4=item_text3.split('>',1)
-              item_text5=item_text4[1].upper()
+              item_text5=item_text4[0].upper()
 
-              if item_text4[1]=='/':
-                  item_dir=item_text4[1]+item_dir
+              if item_text4[0]=='/':
+                  mydir=item_text4[0]+mydir
                   break
-              elif item_text5[0]>='C' and item_text5[0]<='Z' and item_text5[1]==':':
-                  item_dir=item_text5+item_dir
-                  break
+              elif len(item_text5)>=2:
+                  if item_text5[0]>='C' and item_text5[0]<='Z' and item_text5[1]==':':
+                    mydir=item_text5+mydir
+                    break
+                  else:
+                    mydir=item_text4[0]+'/'+mydir
+                    o3=item_id2
               else:
-                  item_dir=item_text4[1]+'/'+item_dir
+                  mydir=item_text4[0]+'/'+mydir
                   o3=item_id2
 
-            print('item_dir',item_dir)
+            print('mydir',mydir)
             
-            item_dir2=item_dir.split('.',-1)
+            item_dir2=mydir.split('.',-1)
             item_dir2[-1]=item_dir2[-1].lower()
             if item_dir2[-1]=='mp3':
 
                 try:
                     pygame.mixer.init()
-                    pygame.mixer.music.load(item_dir)
+                    pygame.mixer.music.load(mydir)
                     pygame.mixer.music.play()
                 except:
                     print('break1')
@@ -388,7 +413,7 @@ def mpNext():
                 ol=[o,]
                 tr.selection_set(ol)
 
-                mainw.title(item_dir)
+                mainw.title(mydir)
                 
                 pygame.mixer.music.set_endevent(pygame.USEREVENT + 1)
 
@@ -435,8 +460,8 @@ def mpNext():
                     step=1
 
         if step==1:
-            item_dir  =''
-            o3        =o
+            mydir  =''
+            o3     =o
 
             try:
                 item_text =tr.item(o3,'text')
@@ -446,41 +471,52 @@ def mpNext():
             if len(item_text)==0:
                 break
 
-            if item_text[0]==':':
-                item_text2=item_text.split('|',1)
+            if item_text[0]=='<':
+              item_text2=item_text.split('<',1)
+              item_text3=item_text2[1]
+              item_text4=item_text3.split('>',1)
+              mydir=item_text4[0]
+            elif item_text[0]=='|':
+              mydir=item_text
+              break
             else:
-                item_text2=item_text.split('>',1)
-            item_dir=item_text2[1]
+              mydir=item_text
 
             while 1:
               item_id2  =tr.parent(o3)
               
               if len(item_id2)==0:
-                  item_text5=item_dir
+                  item_text5=mydir
                   break
-              item_text3=tr.item(item_id2,'text')
+                  
+              item_text=tr.item(item_id2,'text')
               
+              item_text2=item_text.split('<',1)
+              item_text3=item_text2[1]
               item_text4=item_text3.split('>',1)
-              item_text5=item_text4[1].upper()
+              item_text5=item_text4[0].upper()
 
-              if item_text4[1]=='/':
-                  item_dir=item_text4[1]+item_dir
+              if item_text4[0]=='/':
+                  mydir=item_text4[0]+mydir
                   break
-              elif item_text5[0]>='C' and item_text5[0]<='Z' and item_text5[1]==':':
-                  item_dir=item_text5+item_dir
-                  break
+              elif len(item_text5)>=2:
+                  if item_text5[0]>='C' and item_text5[0]<='Z' and item_text5[1]==':':
+                    mydir=item_text5+mydir
+                    break
+                  else:
+                    mydir=item_text4[0]+'/'+mydir
+                    o3=item_id2
               else:
-                  item_dir=item_text4[1]+'/'+item_dir
+                  mydir=item_text4[0]+'/'+mydir
                   o3=item_id2
 
-
-            item_dir2=item_dir.split('.',-1)
+            item_dir2=mydir.split('.',-1)
             item_dir2[-1]=item_dir2[-1].lower()
             if item_dir2[-1]=='mp3':
 
                 try:
                     pygame.mixer.init()
-                    pygame.mixer.music.load(item_dir)
+                    pygame.mixer.music.load(mydir)
                     pygame.mixer.music.play()
                 except:
                     print('break1')
@@ -493,7 +529,7 @@ def mpNext():
                 ol=[o,]
                 tr.selection_set(ol)
 
-                mainw.title(item_dir)
+                mainw.title(mydir)
                 
                 pygame.mixer.music.set_endevent(pygame.USEREVENT + 1)
 
