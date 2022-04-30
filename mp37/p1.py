@@ -56,10 +56,10 @@ scr1.grid(row=0,rowspan=40,column=81,sticky='ns')
 #tr.config(yscrollcommand = scr1.set)
 #scr1.config(command = tree1.yview)
 
-global img1
-global img2
-global img3
-global img4
+#global img1
+#global img2
+#global img3
+#global img4
 
 #img1=PhotoImage(file='./i1.png')
 #img2=PhotoImage(file='./i2.png')
@@ -70,24 +70,27 @@ info = [ '', '', '',]
 
 global rf1,rf2,rf3,rf4,rf5,rf6,rf7,rf8,rf9,rf10,rf11
 
-rf1 =tr.insert('', END, text='</>'  , open=True, values=info )
-rf2 =tr.insert('', END, text='<C:/>', open=True, values=info )
-rf3 =tr.insert('', END, text='<D:/>', open=True, values=info )
-rf4 =tr.insert('', END, text='<E:/>', open=True, values=info )
-rf5 =tr.insert('', END, text='<F:/>', open=True, values=info )
-rf6 =tr.insert('', END, text='<G:/>', open=True, values=info )
-rf7 =tr.insert('', END, text='<H:/>', open=True, values=info )
-rf8 =tr.insert('', END, text='<I:/>', open=True, values=info )
-rf9 =tr.insert('', END, text='<J:/>', open=True, values=info )
-rf10=tr.insert('', END, text='<K:/>', open=True, values=info )
-rf11=tr.insert('', END, text='<L:/>', open=True, values=info )
+rf1 =tr.insert('', END, text='</>'  , open=False, values=info )
+rf2 =tr.insert('', END, text='<C:/>', open=False, values=info )
+rf3 =tr.insert('', END, text='<D:/>', open=False, values=info )
+rf4 =tr.insert('', END, text='<E:/>', open=False, values=info )
+rf5 =tr.insert('', END, text='<F:/>', open=False, values=info )
+rf6 =tr.insert('', END, text='<G:/>', open=False, values=info )
+rf7 =tr.insert('', END, text='<H:/>', open=False, values=info )
+rf8 =tr.insert('', END, text='<I:/>', open=False, values=info )
+rf9 =tr.insert('', END, text='<J:/>', open=False, values=info )
+rf10=tr.insert('', END, text='<K:/>', open=False, values=info )
+rf11=tr.insert('', END, text='<L:/>', open=False, values=info )
 
-global mu_play,mu_load,mu_pause,item_id0
+global mu_play,mu_load,mu_pause,item_id0,item_cur,item_notclose,item_close
 
 mu_play=0
 mu_load=0
 mu_pause=0
 item_id0=''
+item_cur=''
+item_notclose=0
+item_close=0
 
 probar1 = ttk.Progressbar(mainw, orient=HORIZONTAL, length=980, mode='indeterminate')
 probar1['maximum'] = 100
@@ -158,7 +161,45 @@ def file_size_format(size_n1):
   
 def trClick(event):
 
-    global mu_play,mu_load,mu_pause,item_id0,mainw,tr
+    global mu_play,mu_load,mu_pause,item_id0,item_cur,item_notclose,item_close,mainw,tr
+
+    if item_notclose==1:
+      item_notclose=0
+      
+      if len(item_cur)>0:
+          err=0
+          
+          try:
+            text =tr.item(item_cur,'text')
+          except:
+            item_cur=''
+            err=1
+        
+          if err==0:
+            ol=[item_cur,]
+            tr.selection_set(ol)
+            
+      print('open return')
+      return
+
+    if item_close==1:
+      item_close=0
+      
+      if len(item_cur)>0:
+          err=0
+          
+          try:
+            text =tr.item(item_cur,'text')
+          except:
+            item_cur=''
+            err=1
+        
+          if err==0:
+            ol=[item_cur,]
+            tr.selection_set(ol)
+            
+      print('close return')
+      return
 
     item_dir  =''
     item_id0  =tr.selection()
@@ -218,8 +259,13 @@ def trClick(event):
 
         item_empt=1
         chld=tr.get_children(item_id0)
+        item_open=tr.item(item_id0,'open')
         
-        if len(chld)==0: 
+        if item_open==False:
+        
+          for o in chld:
+              tr.delete(o)
+         
           dirs=[]
           try:
               dirs = os.listdir(item_dir)
@@ -234,7 +280,7 @@ def trClick(event):
               info2= ['', '', '',]
               if os.path.isdir(item_dir+'/'+files):
                   item_empt=0
-                  tr.insert(item_id0, END, text='<'+files+'>', open=True)
+                  tr.insert(item_id0, END, text='<'+files+'>', open=False)
             
           dirs=[]
           try:  
@@ -288,16 +334,42 @@ def trClick(event):
           if item_empt==1:
               tr.insert(item_id0, END, text='|'+'Empty Fold'+'|', open=True)
 
+          tr.item(item_id0,open=True)
+
         else:
-          for o in chld:
-              tr.delete(o)
+
+          tr.item(item_id0,open=False)
+        
+        if len(item_cur)>0:
+          err=0
+          
+          try:
+            text =tr.item(item_cur,'text')
+          except:
+            item_cur=''
+            err=1
+        
+          if err==0:
+            ol=[item_cur,]
+            tr.selection_set(ol)
+
     else:
         event = pygame.event.Event(pygame.USEREVENT+2)
         pygame.event.post(event)
             
+def trItemOpen(p):
+  global item_notclose
+  print('open')
+  item_notclose=1
+  
+def trItemClose(p):
+  global item_close
+  print('close')
+  item_close=1
+
 def mpNext():
 
-  global mu_load,mu_play,mu_pause,item_id0,mainw,tr,bt
+  global mu_load,mu_play,mu_pause,item_id0,item_cur,mainw,tr,bt
 
   pygame.init()
   chld=[]
@@ -341,8 +413,9 @@ def mpNext():
                     step=1
 
         if step==1:
-            mydir  =''
-            o3     =o
+            mydir   =''
+            item_cur=o
+            o3      =o
 
             try:
                 item_text =tr.item(o3,'text')
@@ -460,8 +533,9 @@ def mpNext():
                     step=1
 
         if step==1:
-            mydir  =''
-            o3     =o
+            mydir   =''
+            item_cur=o
+            o3      =o
 
             try:
                 item_text =tr.item(o3,'text')
@@ -584,7 +658,9 @@ def mainwClose():
 
 mainw.protocol("WM_DELETE_WINDOW", mainwClose)
 
-tr.bind('<ButtonRelease-1>', trClick)
+tr.bind('<ButtonRelease-1>',trClick)
+tr.bind('<<TreeviewOpen>>', trItemOpen)
+tr.bind('<<TreeviewClose>>',trItemClose)
 
 thr=Thread(target=mpNext)
 thr.start()
