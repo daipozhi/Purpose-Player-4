@@ -1,7 +1,8 @@
     Purpose Player 4
 
     Write in Python3 ,need install TK and Pygame,it can Display directory tree,
-    and play mp3 files,tested on Ubuntu 20.04(22.04)/Linux Mint 20(Python 3.8) and Windows 10(Python 3.10).
+    and play mp3 files,tested on Ubuntu 20.04(22.04)/Linux Mint 20(Python 3.8)
+    and Windows 10(Python 3.10).
 
     on Ubuntu 20.04(22.04)/Linux Mint 20 need input below command to install TK and Pygame
 
