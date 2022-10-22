@@ -1,7 +1,36 @@
 # -*- encoding=utf-8 -*-
 
-import os
 import sys
+
+args = sys.argv[1:] 
+
+if len(args)>=2 :
+  width =int(args[0])
+  height=int(args[1])
+  if width <640 :
+      width=640
+  if width >7680:
+      width=7680
+  if height<480:
+      height=480
+  if height>4320:
+      height=4320
+else:
+  width  = 1200
+  height =  720
+
+g_topic_h =20
+g_char_h  =17
+g_scr_h   =17
+g_bt_h    =20
+
+g_lines= int((height -g_topic_h -g_scr_h -g_bt_h)/g_char_h -1 +0.5)
+
+g_char_w=15
+g_tr_w  = int(width/g_char_w +0.5)
+g_probar2_w= int(200/g_char_w +0.5)
+
+import os
 import time
 import pygame
 from tkinter   import *
@@ -13,11 +42,11 @@ global mainw
 
 mainw = Tk()
 
-width = 1200
-height = 720
-
 mainw.title('Purpose Player 4')
 mainw.geometry('{}x{}+{}+{}'.format(width, height, 0, 0))
+
+mainw.grid_rowconfigure(0, weight=1)
+mainw.grid_columnconfigure(1, weight=1)
 
 columns = ['Type', 'Size', 'Date' ]
 
@@ -27,7 +56,7 @@ scr1=Scrollbar(mainw,orient='vertical')
 
 tr = ttk.Treeview(
            mainw,
-           height=38,
+           height=g_lines,
            columns=columns,
            show='tree headings',
            selectmode='browse',
@@ -42,19 +71,16 @@ tr.heading('Type', text='Type')
 tr.heading('Size', text='Size')  
 tr.heading('Date', text='Date')  
 
-tr.column('#0'  , width=1200-60-70-160-12) 
-tr.column('Type', width= 60)
-tr.column('Size', width= 70)
-tr.column('Date', width=160)
+tr.column('#0'  , width=width-60-70-160-12) 
+tr.column('Type', width= 60,minwidth=60 ,stretch=0)
+tr.column('Size', width= 70,minwidth=70 ,stretch=0)
+tr.column('Date', width=160,minwidth=160,stretch=0)
 
 scr1['command']=tr.yview
 
-tr.grid(row=0,rowspan=40,column=0,columnspan=80)
+tr.grid(row=0,rowspan=g_lines+1,column=0,columnspan=g_tr_w,sticky='nsew')
 
-scr1.grid(row=0,rowspan=40,column=81,sticky='ns')
-
-#tr.config(yscrollcommand = scr1.set)
-#scr1.config(command = tree1.yview)
+scr1.grid(row=0,rowspan=g_lines+1,column=g_tr_w,sticky='nsew')
 
 #global img1
 #global img2
@@ -92,22 +118,17 @@ item_cur=''
 item_notclose=0
 item_close=0
 
-probar1 = ttk.Progressbar(mainw, orient=HORIZONTAL, length=980, mode='indeterminate')
+probar1 = ttk.Progressbar(mainw, orient=HORIZONTAL, length=width-200-20, mode='indeterminate')
 probar1['maximum'] = 100
 probar1['value'] = 0
-probar1.grid(row=41,column=0,columnspan=65)
+probar1.grid(row=g_lines+2,column=0,columnspan=g_tr_w-g_probar2_w-1,sticky='nsew')
 
 probar2 = ttk.Progressbar(mainw, orient=HORIZONTAL, length=200, mode='indeterminate')
 probar2['maximum'] = 100
 probar2['value'] = 0
-probar2.grid(row=41,column=66,columnspan=14)
+probar2.grid(row=g_lines+2,column=g_tr_w-g_probar2_w,columnspan=g_probar2_w,sticky='nsew')
 
-lb = Label(mainw, width=18, text="00:00:00/00:00:00")
-lb.grid(row=42,column=0)
-
-lb2 = Label(mainw, width=8, text="Volume")
-lb2.grid(row=42,column=79)
-
+global bt
 
 def btClick():
 
@@ -125,10 +146,16 @@ def btClick():
             mu_pause=0
             bt['text']='Pause'
         
-global bt
 
-bt=Button(mainw,height=1,width=20,text='Play',command=btClick)
-bt.grid(row=42,column=35)
+lb = Label(mainw, height=2, width=18, text="00:00:00/00:00:00")
+lb.grid(row=g_lines+3,column=0)
+
+bt=Button(mainw,height=1,width=14,text='Play',command=btClick)
+#bt.grid(row=g_lines+3,column=37)
+
+lb2 =Label(mainw, height=2, width=8, text="-Volume+")
+lb2.grid(row=g_lines+3,column=g_tr_w-1)
+
 
 def file_size_format(size_n1):
 
@@ -200,6 +227,9 @@ def trClick(event):
             
       print('close return')
       return
+
+    print('focus'    ,tr.focus())
+    print('selection',tr.selection())
 
     item_dir  =''
     item_id0  =tr.selection()
@@ -656,7 +686,26 @@ def mainwClose():
     
     mainw.destroy()
 
+def winResize(e):
+
+    global mainw,bt
+
+    #print(e)
+
+    width =e.width
+    height=e.height
+    
+    #print("size",width,height)
+    
+    if e.x==0 and e.y==0 :
+        if width>=112 and height>=18 :
+            btx=int(width/2)-7*8
+            bty=height+22
+            bt.place(x=btx,y=bty)
+
+
 mainw.protocol("WM_DELETE_WINDOW", mainwClose)
+mainw.bind('<Configure>', winResize)
 
 tr.bind('<ButtonRelease-1>',trClick)
 tr.bind('<<TreeviewOpen>>', trItemOpen)
