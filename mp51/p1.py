@@ -30,6 +30,20 @@ g_char_w=15
 g_tr_w  = int(width/g_char_w +0.5)
 g_probar2_w= int(200/g_char_w +0.5)
 
+g_pbar1=1.0             # 16  minutes
+g_pbar2=g_pbar1*0.7     # 32  minutes
+g_pbar3=g_pbar2*0.49    # 64  minutes
+g_pbar4=g_pbar3*0.343   # 128 minutes
+
+g_bt_init=0
+g_bt_step=0
+g_bt_y1=0
+g_bt_y2=0
+g_bt_y3=0
+g_bt_adj=0
+
+g_bt_y1=height
+
 import os
 import time
 import pygame
@@ -46,7 +60,7 @@ mainw.title('Purpose Player 4')
 mainw.geometry('{}x{}+{}+{}'.format(width, height, 0, 0))
 
 mainw.grid_rowconfigure(0, weight=1)
-mainw.grid_columnconfigure(1, weight=1)
+mainw.grid_columnconfigure(2, weight=1)
 
 columns = ['Type', 'Size', 'Date' ]
 
@@ -108,29 +122,60 @@ rf9 =tr.insert('', END, text='<J:/>', open=False, values=info )
 rf10=tr.insert('', END, text='<K:/>', open=False, values=info )
 rf11=tr.insert('', END, text='<L:/>', open=False, values=info )
 
-global mu_play,mu_load,mu_pause,item_id0,item_cur,item_notclose,item_close
+global mu_play,mu_load,mu_pause,mu_pos,item_id0,item_cur,item_notclose,item_close
 
 mu_play=0
 mu_load=0
 mu_pause=0
+mu_pos=0
 item_id0=''
 item_cur=''
 item_notclose=0
 item_close=0
 
 probar1 = ttk.Progressbar(mainw, orient=HORIZONTAL, length=width-200-20, mode='indeterminate')
-probar1['maximum'] = 100
+probar1['maximum'] = 10000
 probar1['value'] = 0
 probar1.grid(row=g_lines+2,column=0,columnspan=g_tr_w-g_probar2_w-1,sticky='nsew')
 
 probar2 = ttk.Progressbar(mainw, orient=HORIZONTAL, length=200, mode='indeterminate')
 probar2['maximum'] = 100
-probar2['value'] = 0
+probar2['value'] = 100
 probar2.grid(row=g_lines+2,column=g_tr_w-g_probar2_w,columnspan=g_probar2_w,sticky='nsew')
 
-global bt
+global bt3
 
-def btClick():
+def bt1Click():
+    global mu_pos
+    
+    if pygame.mixer.music.get_busy() :
+        ps=pygame.mixer.music.get_pos()
+        #print(int(ps/1000))
+        ps1=mu_pos+ps/1000-30
+        if ps1<0:
+            ps1=0
+        #print(ps1)
+        #pygame.mixer.music.rewind()
+        #pygame.mixer.music.set_pos(ps1)
+        pygame.mixer.music.play(0,ps1)
+        mu_pos=ps1
+    return
+    
+def bt2Click():
+    global mu_pos
+    
+    if pygame.mixer.music.get_busy() :
+        ps=pygame.mixer.music.get_pos()
+        #print(int(ps/1000))
+        ps1=mu_pos+ps/1000+30
+        #print(ps1)
+        #pygame.mixer.music.rewind()
+        #pygame.mixer.music.set_pos(ps1)
+        pygame.mixer.music.play(0,ps1)
+        mu_pos=ps1
+    return
+
+def bt3Click():
 
     global mu_play,mu_load,mu_pause
 
@@ -139,23 +184,63 @@ def btClick():
             mu_pause=1
             pygame.mixer.music.pause()
             mu_play=0
-            bt['text']='Play'
+            bt3['text']='Play'
         else:
             pygame.mixer.music.unpause()
             mu_play=1
             mu_pause=0
-            bt['text']='Pause'
+            bt3['text']='Pause'
         
+def bt4Click():
 
-lb = Label(mainw, height=2, width=18, text="00:00:00/00:00:00")
-lb.grid(row=g_lines+3,column=0)
+    vl=probar2['value']
+    if vl<2 :
+      vl=2
+    vl2=vl*0.85
+    if vl2<0  :
+        vl2=0
+    if vl2>100:
+        vl2=100
+    probar2['value'] = vl2
+    pygame.mixer.music.set_volume(vl2/100)
+    mainw.update()
+                
+    return
 
-bt=Button(mainw,height=1,width=14,text='Play',command=btClick)
-#bt.grid(row=g_lines+3,column=37)
 
-lb2 =Label(mainw, height=2, width=8, text="-Volume+")
-lb2.grid(row=g_lines+3,column=g_tr_w-1)
+def bt5Click():
 
+    vl=probar2['value']
+    if vl<2 :
+      vl=2
+    vl2=vl*1.18
+    if vl2<0  :
+        vl2=0
+    if vl2>100:
+        vl2=100
+    probar2['value'] = vl2
+    pygame.mixer.music.set_volume(vl2/100)
+    mainw.update()
+                
+    return
+
+bt1=Button(mainw,height=1,width=1,text='-',command=bt1Click)
+bt1.grid(row=g_lines+3,column=0)
+
+lb1 = Label(mainw, height=1, width=18, text="00:00:00/00:00:00")
+lb1.grid(row=g_lines+3,column=1)
+
+bt2=Button(mainw,height=1,width=1,text='+',command=bt2Click)
+
+bt3=Button(mainw,height=1,width=14,text='Play',command=bt3Click)
+#bt3.grid(row=g_lines+3,column=37)
+
+bt4=Button(mainw,height=1,width=1,text='-',command=bt4Click)
+
+lb2 =Label(mainw, height=1, width=6, text="Volume")
+#lb2.grid(row=g_lines+3,column=g_tr_w-1)
+
+bt5=Button(mainw,height=1,width=1,text='+',command=bt5Click)
 
 def file_size_format(size_n1):
 
@@ -190,26 +275,7 @@ def trClick(event):
 
     global mu_play,mu_load,mu_pause,item_id0,item_cur,item_notclose,item_close,mainw,tr
 
-    if item_notclose==1:
-      item_notclose=0
-      
-      if len(item_cur)>0:
-          err=0
-          
-          try:
-            text =tr.item(item_cur,'text')
-          except:
-            item_cur=''
-            err=1
-        
-          if err==0:
-            ol=[item_cur,]
-            tr.selection_set(ol)
-            
-      print('open return')
-      return
-
-    if item_close==1:
+    if item_close==1: #click [-]
       item_close=0
       
       if len(item_cur)>0:
@@ -228,8 +294,14 @@ def trClick(event):
       print('close return')
       return
 
-    print('focus'    ,tr.focus())
-    print('selection',tr.selection())
+    if item_notclose==1: #click [+]
+      #item_notclose=0
+      
+      print('open proccess')
+
+
+    #print('focus'    ,tr.focus())
+    #print('selection',tr.selection())
 
     item_dir  =''
     item_id0  =tr.selection()
@@ -291,7 +363,9 @@ def trClick(event):
         chld=tr.get_children(item_id0)
         item_open=tr.item(item_id0,'open')
         
-        if item_open==False:
+        #print('item_open=',item_open)
+        
+        if item_open==False or item_notclose==1 :
         
           for o in chld:
               tr.delete(o)
@@ -364,6 +438,8 @@ def trClick(event):
           if item_empt==1:
               tr.insert(item_id0, END, text='|'+'Empty Fold'+'|', open=True)
 
+          item_notclose=0;
+          
           tr.item(item_id0,open=True)
 
         else:
@@ -399,14 +475,13 @@ def trItemClose(p):
 
 def mpNext():
 
-  global mu_load,mu_play,mu_pause,item_id0,item_cur,mainw,tr,bt
+  global mu_load,mu_play,mu_pause,mu_pos,item_id0,item_cur,mainw,tr,bt3
 
-  pygame.init()
   chld=[]
   id0=[]
   stop=0
-  
-  pygame.time.set_timer(pygame.USEREVENT+3,500)
+  end=0
+  next=0
   
   while 1:
     event = pygame.event.wait()
@@ -424,7 +499,7 @@ def mpNext():
       if pygame.mixer.music.get_busy() or mu_pause==1 :
         pygame.mixer.music.stop()
 
-        bt['text']='Play'     #dead lock
+        bt3['text']='Play'     #dead lock
         mu_load=0
         mu_play=0
         stop=1
@@ -434,13 +509,17 @@ def mpNext():
       chld=tr.get_children(item_id1)
       step=0
       nextsong=''
+      end=1
 
       for o in chld:
+
+        next=0
 
         if step==0:
             for o2 in id0:
                 if o==o2:
                     step=1
+                    end =0
 
         if step==1:
             mydir   =''
@@ -506,12 +585,15 @@ def mpNext():
                     pygame.mixer.music.load(mydir)
                     pygame.mixer.music.play()
                 except:
+                    end=1
                     print('break1')
                     break;
 
-                bt['text']='Pause'
+                bt3['text']='Pause'
                 mu_load=1
                 mu_play=1
+                mu_pos =0
+                end=0
 
                 ol=[o,]
                 tr.selection_set(ol)
@@ -520,20 +602,22 @@ def mpNext():
                 
                 pygame.mixer.music.set_endevent(pygame.USEREVENT + 1)
 
-                vl=pygame.mixer.music.get_volume()
-                vl2=vl*100
-                probar2['value'] = vl2
-                mainw.update()
+                #vl=pygame.mixer.music.get_volume()
+                #vl2=vl*100
+                #probar2['value'] = vl2
+                #mainw.update()
                 
                 step=2
                 print('continue2')
                 continue
             else:
+                end=1
                 print('break3')
                 break
                 
         if step==2:
-            nextsong=o
+            nextsong=o #calculate next song
+            next=1
             print('break4')
             break
 
@@ -546,7 +630,7 @@ def mpNext():
       if pygame.mixer.music.get_busy() or mu_pause==1 :
         pygame.mixer.music.stop()
 
-        bt['text']='Play'     #dead lock
+        bt3['text']='Play'     #dead lock
         mu_load=0
         mu_play=0
         stop=1
@@ -554,13 +638,18 @@ def mpNext():
       step=0
       id0=[nextsong,]
       nextsong=''
+      end=1
 
       for o in chld:
+
+        next=0
 
         if step==0:
             for o2 in id0:
                 if o==o2:
                     step=1
+                    end =0
+            
 
         if step==1:
             mydir   =''
@@ -623,12 +712,15 @@ def mpNext():
                     pygame.mixer.music.load(mydir)
                     pygame.mixer.music.play()
                 except:
+                    end=1
                     print('break1')
                     break;
 
-                bt['text']='Pause'
+                bt3['text']='Pause'
                 mu_load=1
                 mu_play=1
+                mu_pos =0
+                end=0
 
                 ol=[o,]
                 tr.selection_set(ol)
@@ -637,27 +729,29 @@ def mpNext():
                 
                 pygame.mixer.music.set_endevent(pygame.USEREVENT + 1)
 
-                vl=pygame.mixer.music.get_volume()
-                vl2=vl*100
-                probar2['value'] = vl2
-                mainw.update()
+                #vl=pygame.mixer.music.get_volume()
+                #vl2=vl*100
+                #probar2['value'] = vl2
+                #mainw.update()
                 
                 step=2
                 print('continue2')
                 continue
             else:
+                end=1
                 print('break3')
                 break
                 
         if step==2:
-            nextsong=o
+            nextsong=o  #calculate next song
+            next=1
             print('break4')
             break
             
     if event.type == pygame.USEREVENT+3 : #display position
     
       if pygame.mixer.music.get_busy() :
-        ps=pygame.mixer.music.get_pos()
+        ps=mu_pos*1000+pygame.mixer.music.get_pos()
         ps1=int(ps/1000)
         ps2=int(ps1/3600)
         ps3=int((ps1-ps2*3600)/60)
@@ -675,7 +769,34 @@ def mpNext():
           
         ps5=s1+':'+s2+':'+s3+'/00:00:00'
         print('pos=',ps5)
-        lb.config(text=ps5)
+        lb1.config(text=ps5)
+
+        #position seek bar
+        if ps1<16*60 : # <16minues
+            po1=(((ps1/(16*60))*g_pbar1)/(g_pbar1+g_pbar2+g_pbar3+g_pbar4))*10000
+        elif ps1<32*60 : # <32minutes
+            po1=((g_pbar1+((ps1-16*60)/(16*60))*g_pbar2)/(g_pbar1+g_pbar2+g_pbar3+g_pbar4))*10000
+        elif ps1<64*60 : # <64minutes
+            po1=((g_pbar1+g_pbar2+((ps1-32*60)/(32*60))*g_pbar3)/(g_pbar1+g_pbar2+g_pbar3+g_pbar4))*10000
+        elif ps1<128*60 : # <128minutes
+            po1=((g_pbar1+g_pbar2+g_pbar3+((ps1-64*60)/(64*60))*g_pbar4)/(g_pbar1+g_pbar2+g_pbar3+g_pbar4))*10000
+        else :
+            po1=10000
+        
+        if po1<0 :
+            po1=0
+        if po1>10000 :
+            po1=10000
+            
+        probar1['value'] = po1
+        mainw.update()
+    
+    if end==1 :
+        bt3['text']='Play'     #dead lock
+        mu_load=0
+        mu_play=0
+        end=0
+
 
 def mainwClose():
 
@@ -688,7 +809,7 @@ def mainwClose():
 
 def winResize(e):
 
-    global mainw,bt
+    global mainw,bt3,g_bt_init,g_bt_step,g_bt_y1,g_bt_y2,g_bt_y3,g_bt_adj
 
     #print(e)
 
@@ -698,11 +819,55 @@ def winResize(e):
     #print("size",width,height)
     
     if e.x==0 and e.y==0 :
-        if width>=112 and height>=18 :
-            btx=int(width/2)-7*8
-            bty=height+22
-            bt.place(x=btx,y=bty)
 
+        if g_bt_init==0 :
+            if g_bt_step==1 :
+                g_bt_y2=height
+            elif g_bt_step==2 :
+                g_bt_y3=height
+
+            g_bt_step=g_bt_step+1
+            
+            if g_bt_step>=3 :
+                g_bt_init=1
+                
+                n1=g_bt_y2-g_bt_y3
+                if n1>50 :      #its Windows
+                    g_bt_adj=3
+                else :          #its Ubuntu
+                    g_bt_adj=0
+                
+
+        #print('y1=',g_bt_y1,'y2=',g_bt_y2,'y3=',g_bt_y3)
+      
+        if width>=112 and height>=18 :
+            #btx=18*8
+            #bty=height+19+g_bt_adj
+            #bt1.place(x=btx,y=bty)
+
+            btx=23*8
+            bty=height+19+g_bt_adj
+            bt2.place(x=btx,y=bty)
+
+            btx=int(width/2)-7*8
+            bty=height+19+g_bt_adj
+            bt3.place(x=btx,y=bty)
+
+            btx=width-25*8
+            bty=height+19+g_bt_adj
+            bt4.place(x=btx,y=bty)
+
+            btx=width-4*8-3
+            bty=height+19+g_bt_adj
+            bt5.place(x=btx,y=bty)
+
+            #btx=2*8
+            #bty=height+19+g_bt_adj
+            #lb1.place(x=btx,y=bty)
+
+            btx=width-15*8
+            bty=height+19+g_bt_adj+5
+            lb2.place(x=btx,y=bty)
 
 mainw.protocol("WM_DELETE_WINDOW", mainwClose)
 mainw.bind('<Configure>', winResize)
@@ -710,6 +875,10 @@ mainw.bind('<Configure>', winResize)
 tr.bind('<ButtonRelease-1>',trClick)
 tr.bind('<<TreeviewOpen>>', trItemOpen)
 tr.bind('<<TreeviewClose>>',trItemClose)
+
+pygame.init()
+pygame.mixer.music.set_volume(1.0)
+pygame.time.set_timer(pygame.USEREVENT+3,500)
 
 thr=Thread(target=mpNext)
 thr.start()

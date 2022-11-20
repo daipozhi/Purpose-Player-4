@@ -14,12 +14,13 @@
     on Windows 10 ,need download Python3 and install it, after that,
     need download Pygame and install it by pip.
 
-    on Ubuntu 20.04,open terminal window,move to mp45 directory,input 
+    on Ubuntu 20.04,open terminal window,move to mp51 directory,input 
         python3 p1.py
-    or on Windows 10,open command line window,move to mp45 directory,input
+    or on Windows 10,open command line window,move to mp51 directory,input
         python p1.py
 
-    this is version 1.45 ,it support window resize .
+    version 1.45 ,it support window resize .
+    version 1.51 ,it support volume changing , support media position seek .
     
     小戴媒体播放器4
 
@@ -36,12 +37,13 @@
 
     在Windows 10需要下载Python3并安装，然后下载Pygame并用pip安装。
 
-    在Ubuntu 20.04,打开终端窗口,移动到mp45目录,输入：
+    在Ubuntu 20.04,打开终端窗口,移动到mp51目录,输入：
         python3 p1.py
-    或者在Windows 10,打开命令行窗口,移动到mp45目录,输入：
+    或者在Windows 10,打开命令行窗口,移动到mp51目录,输入：
         python p1.py
 
-    这是版本1.45 , 支持窗口缩放 .
+    版本1.45 , 支持窗口缩放 .
+    版本1.51 , 支持音量调节 , 快进快退 .
 
 
 
